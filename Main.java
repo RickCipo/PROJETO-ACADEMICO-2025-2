@@ -14,8 +14,6 @@ public class Main {
         Repl repl = new Repl();
         Avaliador avaliador = new Avaliador();
         String input;
-        boolean isRecording = false;
-        int commandsRecorded = 0;
 
         while (true) {
             System.out.print("> ");
@@ -25,75 +23,71 @@ public class Main {
                 continue;
             }
 
-            // Modo de gravação
-            if (isRecording) {
-                if (input.equalsIgnoreCase("STOP")) {
-                    System.out.println("Encerrando gravação... (REC: " + commandsRecorded + "/10)");
-                    isRecording = false;
-                    commandsRecorded = 0;
-                    continue;
-                }
-                
-                // Comandos não aceitos para gravação
-                if (input.equalsIgnoreCase("REC") || input.equalsIgnoreCase("PLAY") || input.equalsIgnoreCase("ERASE") || input.equalsIgnoreCase("EXIT")) {
+            if (repl.estaEmModoGravacao()) {
+                String upperInput = input.toUpperCase();
+                if (upperInput.equals("STOP")) {
+                    repl.pararGravacao();
+                } else if (upperInput.equals("REC") || upperInput.equals("PLAY") || upperInput.equals("ERASE") || upperInput.equals("EXIT")) {
                     System.out.println("Erro: comando inválido para gravação.");
                 } else {
-                    repl.rec(input);
-                    commandsRecorded++;
-                    System.out.println("(REC: " + commandsRecorded + "/10) " + input);
-
-                    if (commandsRecorded >= 10) {
-                        System.out.println("Gravação atingiu o limite de 10 comandos. Parando gravação automaticamente.");
-                        isRecording = false;
-                        commandsRecorded = 0;
-                    }
+                    repl.gravarComando(input);
                 }
                 continue;
             }
 
-            // Modo normal de operação
             String upperInput = input.toUpperCase();
-            if (upperInput.matches("[A-Z]\\s*=\\s*(-?\\d+(\\.\\d+)?).*")) {
-                String[] parts = upperInput.replaceAll("\\s+", "").split("=");
-                try {
-                    char var = parts[0].charAt(0);
-                    double value = Double.parseDouble(parts[1]);
-                    repl.setValue(var, value);
-                    System.out.println(var + " = " + value);
-                } catch (NumberFormatException e) {
-                    System.out.println("Erro: valor inválido.");
-                }
-            } else if (upperInput.equals("VARS")) {
-                repl.vars();
-            } else if (upperInput.equals("RESET")) {
-                repl.reset();
-                System.out.println("Variáveis reiniciadas.");
-            } else if (upperInput.equals("REC")) {
-                System.out.println("Iniciando gravação... (REC: 0/10)");
-                isRecording = true;
-            } else if (upperInput.equals("PLAY")) {
-                repl.play();
-            } else if (upperInput.equals("ERASE")) {
-                repl.erase();
-                System.out.println("Gravação apagada.");
-            } else if (upperInput.equals("EXIT")) {
-                System.out.println("Encerrando o programa...");
-                scanner.close();
-                return;
-            } else {
-                try {
-                    // Configura a expressão no objeto Avaliador
-                    avaliador.setExpressao(input);
-                    // Verifica e resolve a expressão
-                    if (avaliador.verificar()) {
-                        System.out.println(avaliador.resolver(repl));
-                    } else {
-                        System.out.println("Expressão inválida!");
+
+            try {
+                if (upperInput.equals("EXIT")) {
+                    System.out.println("Encerrando o programa...");
+                    break;
+                } else if (upperInput.equals("VARS")) {
+                    repl.listarVariaveis();
+                } else if (upperInput.equals("RESET")) {
+                    repl.reiniciarVariaveis();
+                } else if (upperInput.equals("REC")) {
+                    repl.iniciarGravacao();
+                } else if (upperInput.equals("PLAY")) {
+                    repl.reproduzirGravacao();
+                } else if (upperInput.equals("ERASE")) {
+                    repl.apagarGravacao();
+                } else if (input.contains("=")) {
+                    String[] partes = input.replaceAll("\\s+", "").split("=");
+                    if (partes.length != 2 || partes[0].length() != 1 || !Character.isLetter(partes[0].charAt(0))) {
+                        throw new Exception("Comando de atribuição inválido.");
                     }
-                } catch (Exception e) {
-                    System.out.println("Erro: " + e.getMessage());
+                    repl.definirValor(partes[0].charAt(0), Double.parseDouble(partes[1]));
+
+                // --- LÓGICA CORRIGIDA E MAIS RESTRITA ---
+                
+                } else if (upperInput.matches("[A-Z]")) { // Se for apenas UMA letra
+                    double resultado = repl.consultarValor(upperInput.charAt(0));
+                    if (resultado == (long) resultado) System.out.println((long) resultado);
+                    else System.out.println(resultado);
+
+                } else if (input.matches(".*[+\\-*/^()].*")) { // Se CONTÉM um operador ou parênteses
+                    avaliador.setExpressao(input);
+                    if (avaliador.verificar()) {
+                        double resultado = avaliador.resolver(repl);
+                        if (resultado == (long) resultado) {
+                            System.out.println((long) resultado);
+                        } else {
+                            System.out.println(resultado);
+                        }
+                    } else {
+                        throw new Exception("Expressão inválida.");
+                    }
+                } else { // Se não for nada do que foi testado acima, o comando é inválido
+                    System.out.println("Erro: comando inválido.");
+                }
+
+            } catch (Exception e) {
+                String[] mensagens = e.getMessage().split("\n");
+                for (String msg : mensagens) {
+                    System.out.println("Erro: " + msg);
                 }
             }
         }
+        scanner.close();
     }
 }

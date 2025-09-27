@@ -1,167 +1,132 @@
-import java.util.HashMap;
+// ENRIQUE CIPOLLA MARTINS - 10427834
+// HENRIQUE FERREIRA MARCIANO - 10439797
+
+//Referencias para metodos que não aprendemos em aula ainda. https://www.w3schools.com/java
 
 public class Repl {
     
-    private String[] dicionario = new String[50];
-    private int indice = 0;
+    //Gerenciamento de variáveis simplificado e centralizado
+    private Double[] valoresVariaveis = new Double[26];
 
     private Fila filaDeGravacao;
+    private boolean modoGravacao = false;
 
-    // Construtor da classe Repl.
     public Repl() {
         this.filaDeGravacao = new Fila();
     }
 
-    // --- MÉTODOS NOVOS E RENOMEADOS ---
+    //MÉTODOS PARA O MAIN
 
-    /**
-     * Define ou atualiza o valor de uma variável.
-     * Chamado diretamente pelo Main.
-     */
-    public void setValue(char var, double value) {
-        String varName = String.valueOf(var).toUpperCase();
-        String varValue = String.valueOf(value);
+    public void definirValor(char var, double valor) {
+        int indice = Character.toUpperCase(var) - 'A';
+        if (indice >= 0 && indice < 26) {
+            this.valoresVariaveis[indice] = valor;
+            System.out.println(Character.toUpperCase(var) + " = " + valor);
+        }
+    }
 
-        // Procura se a variável já existe para atualizá-la
-        for (int i = 0; i < this.indice; i += 2) {
-            if (this.dicionario[i].equals(varName)) {
-                this.dicionario[i + 1] = varValue; // Atualiza o valor
-                return; // Termina o método
+    public void listarVariaveis() {
+        boolean encontrou = false;
+        for (int i = 0; i < 26; i++) {
+            if (valoresVariaveis[i] != null) {
+                System.out.println((char)('A' + i) + " = " + valoresVariaveis[i]);
+                encontrou = true;
             }
         }
-
-        // Se não encontrou, adiciona como uma nova variável
-        if (this.indice < this.dicionario.length - 1) {
-            this.dicionario[this.indice] = varName;
-            this.dicionario[this.indice + 1] = varValue;
-            this.indice += 2;
-        }
-    }
-
-    /**
-     * Retorna um HashMap das variáveis para ser usado pelo Avaliador.
-     */
-    public HashMap<Character, Double> getVariaveis() {
-        HashMap<Character, Double> mapaDeVariaveis = new HashMap<>();
-        for (int i = 0; i < this.indice; i += 2) {
-            char var = this.dicionario[i].charAt(0);
-            double val = Double.parseDouble(this.dicionario[i + 1]);
-            mapaDeVariaveis.put(var, val);
-        }
-        return mapaDeVariaveis;
-    }
-
-    /**
-     * Lista todas as variáveis e seus respectivos valores definidos. (Antigo listarVariaveis)
-     */
-    public void vars() {
-        if (this.indice == 0) {
+        if (!encontrou) {
             System.out.println("Nenhuma variável definida.");
-            return;
-        }
-        for (int i = 0; i < indice; i += 2) {
-            System.out.println(dicionario[i] + " = " + dicionario[i + 1]);
         }
     }
 
-    /**
-     * Reinicia todas as variáveis, limpando o dicionário. (Antigo reiniciarVariaveis)
-     */
-    public void reset() {
-        this.indice = 0;
-        // A mensagem de "Variáveis reiniciadas." já é impressa pelo Main.java
+    public void reiniciarVariaveis() {
+        this.valoresVariaveis = new Double[26];
+        System.out.println("Variáveis reiniciadas.");
     }
 
-    /**
-     * Grava um comando na fila. (Antigo gravarComando)
-     */
-    public void rec(String comando) {
+    //MÉTODO PARA O AVALIADOR
+
+    public double consultarValor(char var) throws Exception {
+        int indice = Character.toUpperCase(var) - 'A';
+        if (indice < 0 || indice >= 26 || valoresVariaveis[indice] == null) {
+            throw new Exception("Variável " + var + " não definida.");
+        }
+        return valoresVariaveis[indice];
+    }
+    
+    //MÉTODOS DE GRAVAÇÃO
+
+    public boolean estaEmModoGravacao() {
+        return this.modoGravacao;
+    }
+
+    public void iniciarGravacao() {
+        this.modoGravacao = true;
+        this.filaDeGravacao = new Fila();
+        System.out.println("Iniciando gravação... (REC: 0/10)");
+    }
+
+    public void pararGravacao() {
+        this.modoGravacao = false;
+        System.out.println("Encerrando gravação... (REC: " + this.filaDeGravacao.sizeElements() + "/10)");
+    }
+
+    public void gravarComando(String comando) {
         try {
             if (filaDeGravacao.isFull()) {
-                // A lógica de parar a gravação já está no Main.java
+                System.out.println("Limite de gravação atingido. Parando gravação automaticamente.");
+                pararGravacao();
                 return;
             }
             filaDeGravacao.inserir(comando);
-        } catch (Exception e) {
-            System.out.println("Erro ao gravar comando: " + e.getMessage());
-        }
+            System.out.println("(REC: " + this.filaDeGravacao.sizeElements() + "/10) " + comando);
+        } catch (Exception e) {}
     }
 
-    /**
-     * Limpa a fila de gravação. (Antigo apagarGravacao)
-     */
-    public void erase() {
-        this.filaDeGravacao = new Fila(); // Simplesmente substitui por uma nova fila vazia
+    public void apagarGravacao() {
+        this.filaDeGravacao = new Fila();
+        System.out.println("Gravação apagada.");
     }
 
-    /**
-     * Reproduz os comandos gravados na fila. (Antigo reproduzirGravacao)
-     */
-    public void play() {
+    public void reproduzirGravacao() {
         if (filaDeGravacao.isEmpty()) {
             System.out.println("Não há gravação para ser reproduzida.");
             return;
         }
-
         System.out.println("Reproduzindo gravação...");
         
+        Avaliador avaliadorPlay = new Avaliador();
         int tamanhoAtual = filaDeGravacao.sizeElements();
         try {
             for (int i = 0; i < tamanhoAtual; i++) {
                 String comando = filaDeGravacao.remover();
-                
                 System.out.println("> " + comando);
-                
-                processarComandoGravado(comando);
-
-                filaDeGravacao.inserir(comando); // Coloca de volta no fim
+                processarComandoGravado(comando, avaliadorPlay);
+                filaDeGravacao.inserir(comando);
             }
         } catch (Exception e) {
-            System.err.println("Ocorreu um erro durante a reprodução: " + e.getMessage());
+            System.out.println("Erro: " + e.getMessage());
         }
     }
     
-    // --- MÉTODOS AUXILIARES INTERNOS ---
+    private void processarComandoGravado(String comando, Avaliador avaliador) throws Exception {
+        String upperCmd = comando.trim().toUpperCase();
 
-    /**
-     * Processa a atribuição de uma variável (ex: "A=10"). Usado pelo método play().
-     */
-    private void escreverVariavel(String atribuicao) {
-        String[] partes = atribuicao.replaceAll(" ", "").split("=");
-        if (partes.length == 2) {
-            char var = partes[0].toUpperCase().charAt(0);
-            double val = Double.parseDouble(partes[1]);
-            setValue(var, val); // Reutiliza o método setValue
-            System.out.println(var + " = " + val);
+        if (upperCmd.equals("VARS")) {
+            this.listarVariaveis();
+        } else if (upperCmd.equals("RESET")) {
+            this.reiniciarVariaveis();
+        } else if (upperCmd.contains("=")) {
+            String[] partes = comando.replaceAll(" ", "").split("=");
+            this.definirValor(partes[0].charAt(0), Double.parseDouble(partes[1]));
         } else {
-            System.out.println("Erro: Atribuição de variável em formato inválido.");
-        }
-    }
-    
-    private void processarComandoGravado(String comando) {
-        if (comando.equalsIgnoreCase("VARS")) {
-            this.vars();
-        } else if (comando.equalsIgnoreCase("RESET")) {
-            this.reset();
-            System.out.println("Variáveis reiniciadas.");
-        } else if (comando.contains("=")) {
-            this.escreverVariavel(comando);
-        } else {
-            // Lógica para o Avaliador de Expressões
-            try {
-                Avaliador avaliadorPlay = new Avaliador();
-                avaliadorPlay.setExpressao(comando);
-                if (avaliadorPlay.verificar()) {
-                    System.out.println(avaliadorPlay.resolver(this));
-                } else {
-                    System.out.println("Expressão inválida!");
-                }
-            } catch (Exception e) {
-                System.out.println("Erro: " + e.getMessage());
+            avaliador.setExpressao(comando);
+            if(avaliador.verificar()) {
+                double resultado = avaliador.resolver(this);
+                if (resultado == (long) resultado) System.out.println((long) resultado);
+                else System.out.println(resultado);
+            } else {
+                throw new Exception("Operador inválido.");
             }
         }
     }
-    
-    // Métodos não utilizados pelo Main, podem ser removidos se não forem usados em outro lugar
-    // consultarValor, iniciarGravacao, pararGravacao, estaEmModoGravacao
 }

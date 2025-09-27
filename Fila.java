@@ -2,7 +2,7 @@
 // HENRIQUE FERREIRA MARCIANO - 10439797
 
 public class Fila{
-    // Especifica um limite de 10 comandos na fila de gravação [cite: 59]
+    // Especifica um limite de 10 comandos na fila de gravação
     private final int TAM_FILA = 10;
     private String fila[];
     private int inicio;
@@ -38,7 +38,7 @@ public class Fila{
         }
     }
 
-    // Remove e retorna o elemento do início da fila (de forma circular)
+    //Remove e retorna o elemento do início da fila (de forma circular)
     public String remover() throws Exception{
         if (!this.isEmpty()){
             String elemento = this.fila[this.inicio];
@@ -51,7 +51,7 @@ public class Fila{
         }
     }
 
-    // Retorna o elemento do início da fila sem removê-lo
+    //Retorna o elemento do início da fila sem removê-lo
     public String frente() throws Exception{
         if (!this.isEmpty()){
             return this.fila[this.inicio];

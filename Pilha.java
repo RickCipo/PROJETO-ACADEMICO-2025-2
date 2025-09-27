@@ -6,30 +6,24 @@ public class Pilha<T>{
     private int topo;
     private int capacidade;
 
-    // Construtor que inicializa a pilha com uma capacidade padrão
     public Pilha(){
-        this(50); //Define uma capacidade padrão de 50, pode ser ajustada
+        this(50);
     }
 
-    //Construtor que permite definir a capacidade da pilha
     public Pilha(int capacidade){
         this.capacidade = capacidade;
-        // Use Array.newInstance to create the array with the correct generic type
         this.dados = (T[]) new Object[capacidade];
-        this.topo = -1; //A pilha começa vazia.
+        this.topo = -1;
     }
 
-    //Verifica se a pilha está vazia
     public boolean isEmpty(){
         return this.topo == -1;
     }
 
-    //Verifica se a pilha está cheia
     public boolean isFull(){
         return this.topo == this.capacidade - 1;
     }
 
-    // Adiciona um elemento no topo da pilha
     public void push(T elemento) throws Exception{
         if (!this.isFull()){
             this.topo++;
@@ -39,7 +33,6 @@ public class Pilha<T>{
         }
     }
 
-    // Remove e retorna o elemento do topo da pilha
     public T pop() throws Exception{
         if (!this.isEmpty()){
             T elementoRemovido = this.dados[this.topo];
@@ -50,7 +43,6 @@ public class Pilha<T>{
         }
     }
 
-    // Retorna o elemento do topo da pilha sem removê-lo
     public T peek() throws Exception{
         if (!this.isEmpty()){
             return this.dados[this.topo];
@@ -58,9 +50,8 @@ public class Pilha<T>{
             throw new Exception("Underflow - Esvaziamento de Pilha");
         }
     }
-
-    // Retorna a quantidade de elementos na pilha
-    public int size(){
+    
+    public int sizeElements(){
         return this.topo + 1;
     }
 }
