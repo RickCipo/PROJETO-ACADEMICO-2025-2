@@ -14,7 +14,7 @@ public class Pilha<T>{
     //Construtor que permite definir a capacidade da pilha
     public Pilha(int capacidade){
         this.capacidade = capacidade;
-        //A linha abaixo pode gerar um "warning", mas está correta para este caso
+        // Use Array.newInstance to create the array with the correct generic type
         this.dados = (T[]) new Object[capacidade];
         this.topo = -1; //A pilha começa vazia.
     }
@@ -60,7 +60,7 @@ public class Pilha<T>{
     }
 
     // Retorna a quantidade de elementos na pilha
-    public int sizeElements(){
+    public int size(){
         return this.topo + 1;
     }
 }
