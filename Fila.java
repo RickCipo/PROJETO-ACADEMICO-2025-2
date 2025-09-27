@@ -2,56 +2,53 @@
 // HENRIQUE FERREIRA MARCIANO - 10439797
 
 public class Fila{
-    // Especifica um limite de 10 comandos na fila de gravação [cite: 59]
+    //Especifica um limite de 10 comandos na fila de gravação
     private final int TAM_FILA = 10;
     private String fila[];
-    private int inicio;
-    private int fim;
-    private int total; // Contador para controlar o número de elementos
+    private int inicio; //Aponta para o primeiro elemento da fila
+    private int fim;    //Aponta para a próxima posição livre no final da fila
 
     public Fila(){
         this.fila = new String[TAM_FILA];
+        //Ambos começam em 0. A fila está vazia quando inicio == fim
         this.inicio = 0;
         this.fim = 0;
-        this.total = 0; // A fila começa com zero elementos
     }
 
-    // Verifica se a fila está vazia
+
+    //Verifica se a fila está vazia
     public boolean isEmpty(){
-        return this.total == 0;
+        return this.inicio == this.fim;
     }
+    
 
-    // Verifica se a fila está cheia
+    //Verifica se a fila está cheia.
     public boolean isFull(){
-        return this.total == this.fila.length;
+        return this.fim == this.fila.length;
     }
 
-    // Adiciona um elemento no fim da fila (de forma circular)
+    //Adiciona um elemento no fim da fila
     public void inserir(String i) throws Exception{
         if (!this.isFull()){
             this.fila[this.fim] = i;
-            // A mágica do circular: quando 'fim' chega no final, ele volta para 0.
-            this.fim = (this.fim + 1) % this.fila.length;
-            this.total++;
-        } else{
+            this.fim++;
+        } else {
             throw new Exception("Overflow - A fila está cheia");
         }
     }
 
-    // Remove e retorna o elemento do início da fila (de forma circular)
+    //Remove e retorna o elemento do início da fila
     public String remover() throws Exception{
         if (!this.isEmpty()){
             String elemento = this.fila[this.inicio];
-            // A mágica do circular: quando 'inicio' chega no final, ele volta para 0.
-            this.inicio = (this.inicio + 1) % this.fila.length;
-            this.total--;
+            this.inicio++;
             return elemento;
         } else{
             throw new Exception("Underflow - A fila está vazia");
         }
     }
 
-    // Retorna o elemento do início da fila sem removê-lo
+    //Retorna o elemento do início da fila sem removê-lo
     public String frente() throws Exception{
         if (!this.isEmpty()){
             return this.fila[this.inicio];
@@ -59,9 +56,9 @@ public class Fila{
             throw new Exception("Underflow - A fila está vazia");
         }
     }
-
-    // Retorna a quantidade de elementos atualmente na fila
+    
+    //Retorna a quantidade de elementos atualmente na fila
     public int sizeElements(){
-        return this.total;
+        return this.fim - this.inicio;
     }
 }
